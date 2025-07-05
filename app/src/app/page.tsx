@@ -6,10 +6,16 @@ export default function Home() {
     key.startsWith("NEXT_PUBLIC_")
   );
 
+  // Detectar el ambiente desde una variable pública
+  const ambiente = process.env.NEXT_PUBLIC_ENVIRONMENT || "local";
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <h1 className="text-3xl font-bold text-center mb-4">¡Hola mundo! 🚀</h1>
+        <div className="mb-4 p-2 rounded bg-blue-100 text-blue-900 font-semibold text-center w-full max-w-xl">
+          Current Environment: <span className="uppercase">{ambiente}</span>
+        </div>
         {envVars.length > 0 && (
           <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-4 w-full max-w-xl">
             <h2 className="font-semibold mb-2">
