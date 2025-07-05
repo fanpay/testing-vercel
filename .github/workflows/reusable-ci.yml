@@ -7,7 +7,7 @@ on:
       branch_name:
         required: true
         type: string
-      environment_name:
+      github_environment:
         required: true
         type: string
       node_version:
@@ -33,7 +33,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment_name }}
+    environment: ${{ inputs.github_environment }}
     env:
       NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
       NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
