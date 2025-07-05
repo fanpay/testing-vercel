@@ -1,5 +1,5 @@
 # .github/workflows/release.yml
-name: Crear nueva versión - release
+name: Create new version - release
 on:
   workflow_call:
     inputs:
@@ -10,8 +10,6 @@ on:
         required: true
         type: string
     secrets:
-      # Asegúrate de que estos secretos estén disponibles para el workflow que llama
-      # O que estén configurados en el ambiente 'release' de GitHub
       NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID:
         required: true
       NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME:
@@ -32,47 +30,42 @@ on:
         required: true
       VERCEL_PROJECT_ID:
         required: true
-      # docker_username: # Parece ser de Java, si no lo usas, quítalo
-      #   required: true
-      # docker_token: # Parece ser de Java, si no lo usas, quítalo
-      #   required: true
 
 jobs:
   create_branch_release:
-    name: Se crea la rama release
+    name: Creating release branch
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout de repositorio
-        uses: actions/checkout@v4 # Usa v4, no v3
+      - name: Repository checkout
+        uses: actions/checkout@v4 
         with:
           ref: develop
-      - name: Crear rama release
+      - name: Create and push release branch
         run: |
           git fetch origin
           git checkout develop
           git pull
           git checkout -b ${{inputs.release_version}}
           git push -f -u origin ${{inputs.release_version}}
-      - name: Mezcla develop -> release
+      - name: Merge develop -> release
         uses: tukasz/direct-merge-action@master
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           source-branch: develop
           target-branch: ${{inputs.release_version}}
-          commit-message: "Se actualiza la rama ${{inputs.release_version}} con la rama develop"
+          commit-message: "Branch ${{inputs.release_version}} was updated with develop branch changes"
 
-  # NUEVO JOB: Ejecutar CI en la rama de release
   run_ci_on_release_branch:
     needs: create_branch_release
-    name: Ejecutar CI en la rama release
-    uses: ./.github/workflows/reusable-ci.yml # Llama a tu workflow reusable de CI
+    name: Run CI on release branch
+    uses: ./.github/workflows/reusable-ci.yml # Calls our reusable CI workflow
     with:
       branch_name: ${{ inputs.release_version }}
       github_environment: staging # O un nuevo ambiente 'release-ci' si quieres diferenciar
       node_version: '22' # O pasarlo como input si lo necesitas variable
     secrets:
-      # Pasa los secretos necesarios para el CI
+      # Passing the required secrets to the reusable CI workflow
       NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
       NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
       CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}
@@ -81,7 +74,7 @@ jobs:
       CONSCIA_ENVIRONMENT_CODE: ${{ secrets.CONSCIA_ENVIRONMENT_CODE }}
       LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
-  # NUEVO JOB: Desplegar la rama de release a Vercel Staging
+  # Deploy a Vercel Staging
   deploy_release_to_vercel_staging:
     needs: run_ci_on_release_branch # Depende de que el CI haya pasado
     name: Desplegar release a Vercel Staging
