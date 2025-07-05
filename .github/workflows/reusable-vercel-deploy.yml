@@ -8,6 +8,9 @@ on:
         required: false
         type: string
         default: ${{ github.sha }}
+      environment_name:
+        required: true
+        type: string
     secrets:
       VERCEL_TOKEN:
         required: true
@@ -20,6 +23,7 @@ jobs:
   deploy-vercel:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

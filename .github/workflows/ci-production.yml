@@ -35,6 +35,7 @@ jobs:
     uses: ./.github/workflows/reusable-vercel-deploy.yml
     with:
       ref: ${{ github.sha }}
+      environment_name: production
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
