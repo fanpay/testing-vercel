@@ -1,10 +1,29 @@
 import Image from "next/image";
 
 export default function Home() {
+  // Obtener todas las variables de entorno que empiezan con NEXT_PUBLIC_
+  const envVars = Object.entries(process.env).filter(([key]) =>
+    key.startsWith("NEXT_PUBLIC_")
+  );
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <h1 className="text-3xl font-bold text-center mb-4">¡Hola mundo! 🚀</h1>
+        {envVars.length > 0 && (
+          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-4 w-full max-w-xl">
+            <h2 className="font-semibold mb-2">
+              Variables de entorno (NEXT_PUBLIC_*) detectadas:
+            </h2>
+            <ul className="text-xs font-mono">
+              {envVars.map(([key, value]) => (
+                <li key={key}>
+                  <b>{key}:</b> {String(value)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Image
           className="dark:invert"
           src="/next.svg"
