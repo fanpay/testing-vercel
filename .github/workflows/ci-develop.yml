@@ -35,7 +35,7 @@ jobs:
     uses: ./.github/workflows/vercel-reusable-deploy.yml
     with:
       github_environment: develop
-      vercel_environment: preview
+      vercel_environment: development
       prod: false
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
