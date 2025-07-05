@@ -32,10 +32,10 @@ jobs:
   deploy-vercel:
     if: github.event_name == 'workflow_dispatch' && inputs.deploy_vercel == 'yes'
     needs: call-ci-workflow
-    uses: ./.github/workflows/reusable-vercel-deploy.yml
+    uses: ./.github/workflows/vercel-reusable-deploy.yml
     with:
-      ref: ${{ github.sha }}
-      environment_name: develop
+      environment: preview
+      prod: false
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
