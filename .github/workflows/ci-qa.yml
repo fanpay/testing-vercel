@@ -25,7 +25,6 @@ jobs:
     needs: call-ci-workflow
     uses: ./.github/workflows/reusable-vercel-deploy.yml
     with:
-      prod: false
       ref: ${{ github.sha }}
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
