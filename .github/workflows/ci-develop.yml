@@ -1,0 +1,23 @@
+name: CI - Develop
+on:
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      node_version:
+        description: 'Node.js version to use'
+        required: false
+        default: '22'
+        type: choice
+        options:
+          - '20'
+          - '22'
+jobs:
+  call-ci-workflow:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      branch_name: develop
+      environment_name: develop
+      node_version: ${{ github.event.inputs.node_version }}
+    secrets: inherit

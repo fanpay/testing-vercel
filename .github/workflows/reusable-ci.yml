@@ -1,0 +1,71 @@
+# .github/workflows/reusable-ci.yml
+name: Reusable CI Steps
+
+on:
+  workflow_call:
+    inputs:
+      branch_name:
+        required: true
+        type: string
+      environment_name:
+        required: true
+        type: string
+      node_version:
+        required: false
+        type: string
+        default: '22'
+    secrets:
+      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID:
+        required: true
+      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME:
+        required: true
+      CONSCIA_API_URL:
+        required: true
+      CONSCIA_BEARER_TOKEN:
+        required: true
+      CONSCIA_CUSTOMER:
+        required: true
+      CONSCIA_ENVIRONMENT_CODE:
+        required: true
+      LHCI_GITHUB_APP_TOKEN:
+        required: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
+    env:
+      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
+      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
+      CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}
+      CONSCIA_BEARER_TOKEN: ${{ secrets.CONSCIA_BEARER_TOKEN }}
+      CONSCIA_CUSTOMER: ${{ secrets.CONSCIA_CUSTOMER }}
+      CONSCIA_ENVIRONMENT_CODE: ${{ secrets.CONSCIA_ENVIRONMENT_CODE }}
+      LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+    steps:
+      - name: 🗄️ Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: 🌐 Use Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+      - name: 📦 Install Dependencies
+        run: |
+          npm install
+      - name: 🧪 Run Tests
+        run: |
+          npm test
+      - name: 🧹 Check Linting
+        run: |
+          npm run lint
+      - name: 🔍 Check Formatting
+        run: |
+          npm run format
+      - name: 🛠️ Build Next.js
+        run: |
+          npm run build:ci
+      - name: 📊 Run Lighthouse CI
+        run: |
+          npm run lighthouse

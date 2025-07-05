@@ -1,0 +1,23 @@
+name: CI - Production
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      node_version:
+        description: 'Node.js version to use'
+        required: false
+        default: '22'
+        type: choice
+        options:
+          - '20'
+          - '22'
+jobs:
+  call-ci-workflow:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      branch_name: main
+      environment_name: production
+      node_version: ${{ github.event.inputs.node_version }}
+    secrets: inherit
