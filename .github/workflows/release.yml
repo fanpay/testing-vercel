@@ -1,0 +1,143 @@
+# .github/workflows/release.yml
+name: Crear nueva versión - release
+on:
+  workflow_call:
+    inputs:
+      release_version:
+        required: true
+        type: string
+      release_tag:
+        required: true
+        type: string
+    secrets:
+      # Asegúrate de que estos secretos estén disponibles para el workflow que llama
+      # O que estén configurados en el ambiente 'release' de GitHub
+      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID:
+        required: true
+      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME:
+        required: true
+      CONSCIA_API_URL:
+        required: true
+      CONSCIA_BEARER_TOKEN:
+        required: true
+      CONSCIA_CUSTOMER:
+        required: true
+      CONSCIA_ENVIRONMENT_CODE:
+        required: true
+      LHCI_GITHUB_APP_TOKEN:
+        required: true
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
+      # docker_username: # Parece ser de Java, si no lo usas, quítalo
+      #   required: true
+      # docker_token: # Parece ser de Java, si no lo usas, quítalo
+      #   required: true
+
+jobs:
+  create_branch_release:
+    name: Se crea la rama release
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout de repositorio
+        uses: actions/checkout@v4 # Usa v4, no v3
+        with:
+          ref: develop
+      - name: Crear rama release
+        run: |
+          git fetch origin
+          git checkout develop
+          git pull
+          git checkout -b ${{inputs.release_version}}
+          git push -f -u origin ${{inputs.release_version}}
+      - name: Mezcla develop -> release
+        uses: tukasz/direct-merge-action@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          source-branch: develop
+          target-branch: ${{inputs.release_version}}
+          commit-message: "Se actualiza la rama ${{inputs.release_version}} con la rama develop"
+
+  # NUEVO JOB: Ejecutar CI en la rama de release
+  run_ci_on_release_branch:
+    needs: create_branch_release
+    name: Ejecutar CI en la rama release
+    uses: ./.github/workflows/reusable-ci.yml # Llama a tu workflow reusable de CI
+    with:
+      branch_name: ${{ inputs.release_version }}
+      github_environment: staging # O un nuevo ambiente 'release-ci' si quieres diferenciar
+      node_version: '22' # O pasarlo como input si lo necesitas variable
+    secrets:
+      # Pasa los secretos necesarios para el CI
+      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
+      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
+      CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}
+      CONSCIA_BEARER_TOKEN: ${{ secrets.CONSCIA_BEARER_TOKEN }}
+      CONSCIA_CUSTOMER: ${{ secrets.CONSCIA_CUSTOMER }}
+      CONSCIA_ENVIRONMENT_CODE: ${{ secrets.CONSCIA_ENVIRONMENT_CODE }}
+      LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # NUEVO JOB: Desplegar la rama de release a Vercel Staging
+  deploy_release_to_vercel_staging:
+    needs: run_ci_on_release_branch # Depende de que el CI haya pasado
+    name: Desplegar release a Vercel Staging
+    uses: ./.github/workflows/vercel-reusable-deploy.yml # Llama a tu workflow reusable de Vercel
+    with:
+      github_environment: staging # Apunta al ambiente de GitHub 'staging'
+      vercel_environment: preview # Vercel lo tratará como preview, pero es tu staging
+      prod: false
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+
+  merge_branch_release:
+    # Ahora depende del despliegue a staging para asegurar que todo está bien
+    needs: deploy_release_to_vercel_staging
+    name: Se realiza merge de la rama release en la rama principal
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mezcla release -> main
+        uses: tukasz/direct-merge-action@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          source-branch: ${{inputs.release_version}}
+          target-branch: main
+          commit-message: "Se integra rama ${{inputs.release_version}} en main. Rama main actualizada"
+
+      - name: Mezcla release -> develop
+        uses: tukasz/direct-merge-action@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          source-branch: ${{inputs.release_version}}
+          target-branch: develop
+          commit-message: "Se integra rama ${{inputs.release_version}} en develop. Rama develop actualizada"
+
+  tagging_main:
+    needs: [merge_branch_release]
+    name: Se taggea rama principal con la versión actual
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout de repositorio
+        uses: actions/checkout@v4 # Usa v4
+        with:
+          ref: main
+          fetch-depth: 0 # Necesario para crear tags
+
+      - name: Creación de tag de versionamiento
+        run: |
+          git config --global user.email "admin@github.com"
+          git config --global user.name "Admin"
+          git tag -a ${{inputs.release_tag}} HEAD -m 'Se realiza nuevo release ${{inputs.release_tag}}'
+          git push origin ${{inputs.release_tag}}
+
+      #- name: Eliminar rama release remota # Opcional: limpiar la rama release
+      #  run: |
+      #    git push origin --delete ${{inputs.release_version}}
