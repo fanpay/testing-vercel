@@ -13,8 +13,8 @@ on:
         options:
           - '20'
           - '22'
-      deploy_vercel:
-        description: 'Deploy to Vercel after manual CI? (yes/no)'
+      manual_deploy_vercel:
+        description: 'Manual deploy to Vercel after manual CI? (yes/no)'
         required: false
         default: 'no'
         type: choice
@@ -29,7 +29,7 @@ jobs:
       github_environment: staging
       node_version: ${{ github.event.inputs.node_version }}
     secrets: inherit
-  deploy-vercel:
+  manual-deploy-vercel:
     if: github.event_name == 'workflow_dispatch' && inputs.deploy_vercel == 'yes'
     needs: call-ci-workflow
     uses: ./.github/workflows/vercel-reusable-deploy.yml
