@@ -1,0 +1,43 @@
+name: CI - Production
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      node_version:
+        description: 'Node.js version to use'
+        required: false
+        default: '22'
+        type: choice
+        options:
+          - '20'
+          - '22'
+      deploy_vercel:
+        description: 'Deploy to Vercel after manual CI? (yes/no)'
+        required: false
+        default: 'no'
+        type: choice
+        options:
+          - 'yes'
+          - 'no'
+jobs:
+  call-ci-workflow:
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      branch_name: main
+      github_environment: production
+      node_version: ${{ github.event.inputs.node_version }}
+    secrets: inherit
+  deploy-vercel:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_vercel == 'yes'
+    needs: call-ci-workflow
+    uses: ./.github/workflows/vercel-reusable-deploy.yml
+    with:
+      github_environment: production
+      vercel_environment: production
+      prod: true
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
