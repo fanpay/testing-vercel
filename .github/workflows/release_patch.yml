@@ -1,4 +1,4 @@
-# Ej. Release PATCH.yml (ajustado - quitar secrets de docker si no son necesarios)
+# File: .github/workflows/release_patch.yml
 name: Release PATCH version
 
 on:
@@ -7,24 +7,26 @@ on:
 jobs:
   generate-version:
     name: Generar versión PATCH
-    runs-on: ubuntu-latest # No necesitas matrix aquí si solo es ubuntu-latest
+    runs-on: ubuntu-latest # It's possible to use matrix here if needed
     outputs:
       release_version: ${{ steps.setting_version.outputs.RELEASE_VERSION }}
       release_tag: ${{ steps.setting_version.outputs.RELEASE_TAG }}
 
     steps:
-      - name: Actualizar repositorio
+      - name: Update repository
         uses: actions/checkout@v4 # Usa v4
         with:
           fetch-depth: 0
 
-      - name: Se obtiene tag anterior
+      - name: Get previous tag from repository
         id: previoustag
         uses: 'WyriHaximus/github-action-get-previous-tag@v1'
+        with:
+          fallback: 0.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Se obtiene la nueva versión de acuerdo al tag'
+      - name: Get new version based on previous tag
         id: semvers
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
@@ -43,13 +45,12 @@ jobs:
 
   invoke_workflow:
     needs: [ generate-version ]
-    permissions: write-all # Necesario para llamar a un workflow con write permissions
+    permissions: write-all # This step needs write permissions to create branches and tags
     uses: ./.github/workflows/release.yml
     with:
       release_version: release/${{ needs.generate-version.outputs.release_version }}
       release_tag: ${{ needs.generate-version.outputs.release_tag }}
     secrets:
-      # Pasa solo los secretos que realmente necesita el workflow 'release.yml'
       NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
       NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
       CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}
