@@ -14,7 +14,7 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <h1 className="text-3xl font-bold text-center mb-4">¡Hola mundo! 🚀</h1>
         <div className="mb-4 p-2 rounded bg-blue-100 text-blue-900 font-semibold text-center w-full max-w-xl">
-          Ambiente actual: <span className="uppercase">{ambiente}</span>
+          Current Environment: <span className="uppercase">{ambiente}</span>
         </div>
         {envVars.length > 0 && (
           <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-4 w-full max-w-xl">
