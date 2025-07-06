@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_branch:
-        description: 'Branch name for the release (e.g., release/1.2.3)'
-        required: true
+        description: 'Branch name for the release (e.g., release/1.2.3). If left empty, the latest release branch will be used.'
+        required: false
+        default: ''
       tag_name:
         description: 'Tag name for the release (e.g., v1.2.3). If left empty, it will be auto-generated based on the previous tag.'
         required: false
@@ -28,10 +29,28 @@ jobs:
     outputs:
       tag_name: ${{ steps.set_tag.outputs.tag_name }}
     steps:
+      - name: Get latest release branch if not provided
+        if: ${{ github.event.inputs.release_branch == '' }}
+        id: get_latest_release_branch
+        run: |
+          git fetch --all
+          LATEST_BRANCH=$(git branch -r --sort=-committerdate | grep 'origin/release/' | head -n 1 | sed 's|origin/||')
+          echo "LATEST_RELEASE_BRANCH=$LATEST_BRANCH" >> $GITHUB_ENV
+          echo "latest_release_branch=$LATEST_BRANCH" >> $GITHUB_OUTPUT
+      - name: Set release branch variable
+        id: set_release_branch
+        run: |
+          if [ "${{ github.event.inputs.release_branch }}" != "" ]; then
+            BRANCH="${{ github.event.inputs.release_branch }}"
+          else
+            BRANCH="${{ steps.get_latest_release_branch.outputs.latest_release_branch }}"
+          fi
+          echo "RELEASE_BRANCH=$BRANCH" >> $GITHUB_ENV
+          echo "release_branch=$BRANCH" >> $GITHUB_OUTPUT
       - name: Checkout release branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.release_branch }}
+          ref: ${{ steps.set_release_branch.outputs.release_branch }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if tag already exists (manual input)
