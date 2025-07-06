@@ -66,7 +66,10 @@ jobs:
           else
             git config --global user.email "admin@github.com"
             git config --global user.name "Admin"
-            git tag -a $TAG HEAD -m "Release $TAG"
+            # Get changes since the last commit on main branch. It will show what changes are included in the release branch since the last commit on main
+            CHANGES=$(git log --oneline $(git merge-base origin/main HEAD)..HEAD)
+            echo -e "Release $TAG\n\nChanges included on branch:\n$CHANGES" > /tmp/tag_message.txt
+            git tag -a $TAG HEAD -F /tmp/tag_message.txt
             git push origin $TAG
           fi
 
