@@ -18,7 +18,7 @@ jobs:
     environment: production
     permissions: write-all
     outputs:
-      tag_name: ${{ steps.get_tag.outputs.tag_name }}
+      tag_name: ${{ steps.set_tag.outputs.tag_name }}
     steps:
       - name: Checkout de rama release
         uses: actions/checkout@v4
@@ -26,20 +26,43 @@ jobs:
           ref: ${{ github.event.inputs.release_branch }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Detectar tag a usar
-        id: get_tag
+      - name: Validar si el tag manual ya existe
+        if: ${{ github.event.inputs.tag_name != '' }}
+        id: check_manual_tag
         run: |
-          if [ -z "${{ github.event.inputs.tag_name }}" ]; then
-            TAG=$(git describe --tags --abbrev=0)
+          if git rev-parse ${{ github.event.inputs.tag_name }} >/dev/null 2>&1; then
+            echo "El tag ${{ github.event.inputs.tag_name }} ya existe. Abortando workflow."
+            exit 1
+          fi
+      - name: Obtener siguiente tag automáticamente si no hay tag manual
+        if: ${{ github.event.inputs.tag_name == '' }}
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 0.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Calcular siguiente tag semver (patch)
+        if: ${{ github.event.inputs.tag_name == '' }}
+        id: semvers
+        uses: WyriHaximus/github-action-next-semvers@v1
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+      - name: Set tag variable
+        id: set_tag
+        run: |
+          if [ "${{ github.event.inputs.tag_name }}" != "" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
           else
-            TAG=${{ github.event.inputs.tag_name }}
+            TAG="${{ steps.semvers.outputs.v_patch }}"
           fi
           echo "tag_name=$TAG" >> $GITHUB_OUTPUT
           echo "TAG=$TAG" >> $GITHUB_ENV
-      - name: Crear tag si no existe
+      - name: Crear tag si no existe (solo si no falló antes)
         run: |
           if git rev-parse $TAG >/dev/null 2>&1; then
-            echo "El tag $TAG ya existe."
+            echo "El tag $TAG ya existe. Abortando workflow."
+            exit 1
           else
             git config --global user.email "admin@github.com"
             git config --global user.name "Admin"
