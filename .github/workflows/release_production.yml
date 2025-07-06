@@ -12,11 +12,47 @@ on:
         default: ''
 
 jobs:
+  tag_release_branch:
+    name: Taggear rama release
+    runs-on: ubuntu-latest
+    environment: production
+    permissions: write-all
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag_name }}
+    steps:
+      - name: Checkout de rama release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Detectar tag a usar
+        id: get_tag
+        run: |
+          if [ -z "${{ github.event.inputs.tag_name }}" ]; then
+            TAG=$(git describe --tags --abbrev=0)
+          else
+            TAG=${{ github.event.inputs.tag_name }}
+          fi
+          echo "tag_name=$TAG" >> $GITHUB_OUTPUT
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Crear tag si no existe
+        run: |
+          if git rev-parse $TAG >/dev/null 2>&1; then
+            echo "El tag $TAG ya existe."
+          else
+            git config --global user.email "admin@github.com"
+            git config --global user.name "Admin"
+            git tag -a $TAG HEAD -m "Release $TAG"
+            git push origin $TAG
+          fi
+
   merge_release_to_main:
     name: Mergear release a main
     runs-on: ubuntu-latest
     environment: production
     permissions: write-all
+    needs: tag_release_branch
     steps:
       - name: Checkout de main y release
         uses: actions/checkout@v4
@@ -42,6 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     permissions: write-all
+    needs: tag_release_branch
     steps:
       - name: Checkout de develop y release
         uses: actions/checkout@v4
@@ -62,43 +99,9 @@ jobs:
           git merge --no-ff ${{ github.event.inputs.release_branch }} -m "Merge ${{ github.event.inputs.release_branch }} into develop"
           git push origin develop
 
-  tagging_main:
-    name: Taggear main
-    runs-on: ubuntu-latest
-    environment: production
-    permissions: write-all
-    needs: [merge_release_to_main, merge_release_to_develop]
-    outputs:
-      tag_name: ${{ steps.get_tag.outputs.tag_name }}
-    steps:
-      - name: Checkout de repositorio
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-      - name: Detectar tag a usar
-        id: get_tag
-        run: |
-          if [ -z "${{ github.event.inputs.tag_name }}" ]; then
-            TAG=$(git describe --tags --abbrev=0)
-          else
-            TAG=${{ github.event.inputs.tag_name }}
-          fi
-          echo "tag_name=$TAG" >> $GITHUB_OUTPUT
-          echo "TAG=$TAG" >> $GITHUB_ENV
-      - name: Crear tag si no existe
-        run: |
-          if git rev-parse $TAG >/dev/null 2>&1; then
-            echo "El tag $TAG ya existe."
-          else
-            git config --global user.email "admin@github.com"
-            git config --global user.name "Admin"
-            git tag -a $TAG HEAD -m "Release $TAG"
-            git push origin $TAG
-
   deploy_vercel:
     name: Desplegar a producción (Vercel)
-    needs: tagging_main
+    needs: [merge_release_to_main, merge_release_to_develop]
     uses: ./.github/workflows/vercel-reusable-deploy.yml
     with:
       github_environment: production
