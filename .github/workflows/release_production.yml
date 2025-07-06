@@ -10,6 +10,14 @@ on:
         description: 'Tag name for the release (e.g., v1.2.3). If left empty, it will be auto-generated based on the previous tag.'
         required: false
         default: ''
+      manual_deploy_vercel:
+        description: 'Manual deploy to Vercel after manual CI? (yes/no)'
+        required: false
+        default: 'no'
+        type: choice
+        options:
+          - 'no'
+          - 'yes'
 
 jobs:
   tag_release_branch:
@@ -132,8 +140,9 @@ jobs:
           git merge --no-ff ${{ github.event.inputs.release_branch }} -m "Merge ${{ github.event.inputs.release_branch }} into develop"
           git push origin develop
 
-  deploy_vercel:
-    name: Deploy to Vercel(Production)
+  manual-deploy-vercel:
+    name: Manual Deploy to Vercel(Production)
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_deploy_vercel == 'yes'
     needs: [merge_release_to_main, merge_release_to_develop]
     uses: ./.github/workflows/vercel-reusable-deploy.yml
     with:
