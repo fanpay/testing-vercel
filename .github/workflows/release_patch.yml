@@ -3,28 +3,37 @@ name: Release PATCH version
 
 on:
   workflow_dispatch:
+    inputs:
+      node_version:
+        description: 'Node.js version to use'
+        required: false
+        default: '22'
+        type: choice
+        options:
+          - '22'
+          - '20'
 
 jobs:
   generate-version:
-    name: Generar versión PATCH
-    runs-on: ubuntu-latest # It's possible to use matrix here if needed
+    name: Create PATCH version
+    runs-on: ubuntu-latest # It's possible to use matrix here if we needed
     outputs:
       release_version: ${{ steps.setting_version.outputs.RELEASE_VERSION }}
-      release_tag: ${{ steps.setting_version.outputs.RELEASE_TAG }}
 
     steps:
       - name: Update repository
-        uses: actions/checkout@v4 # Usa v4
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Necessary to get all tags
 
       - name: Get previous tag from repository
+        # This step retrieves the last tag from the repository to determine the next version
         id: previoustag
         uses: 'WyriHaximus/github-action-get-previous-tag@v1'
         with:
           fallback: 0.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Make sure this secret is available
 
       - name: Get new version based on previous tag
         id: semvers
@@ -35,22 +44,21 @@ jobs:
       - name: Setting PATCH version
         run: |
           echo "RELEASE_VERSION=${{ steps.semvers.outputs.patch }}" >> $GITHUB_ENV
-          echo "RELEASE_TAG=${{ steps.semvers.outputs.v_patch }}" >> $GITHUB_ENV
 
       - name: Setting GLOBAL version
         id: setting_version
         run: |
           echo "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" >> $GITHUB_OUTPUT
-          echo "RELEASE_TAG=${{ env.RELEASE_TAG }}" >> $GITHUB_OUTPUT
 
   invoke_workflow:
     needs: [ generate-version ]
     permissions: write-all # This step needs write permissions to create branches and tags
-    uses: ./.github/workflows/release.yml
+    uses: ./.github/workflows/release.yml # Path to the reusable release workflow
     with:
       release_version: release/${{ needs.generate-version.outputs.release_version }}
-      release_tag: ${{ needs.generate-version.outputs.release_tag }}
+      node_version: ${{ github.event.inputs.node_version }}
     secrets:
+      # Pass here all the secrets that 'release.yml' has defined as 'required: true' in its inputs
       NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
       NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
       CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}

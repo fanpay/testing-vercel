@@ -1,0 +1,136 @@
+name: Release to Production (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: 'Branch name for the release (e.g., release/1.2.3)'
+        required: true
+      tag_name:
+        description: 'Tag name for the release (e.g., v1.2.3). If left empty, it will be auto-generated based on the previous tag.'
+        required: false
+        default: ''
+
+jobs:
+  tag_release_branch:
+    name: Tag Release Branch
+    runs-on: ubuntu-latest
+    environment: production
+    permissions: write-all
+    outputs:
+      tag_name: ${{ steps.set_tag.outputs.tag_name }}
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if tag already exists (manual input)
+        if: ${{ github.event.inputs.tag_name != '' }}
+        id: check_manual_tag
+        run: |
+          if git rev-parse ${{ github.event.inputs.tag_name }} >/dev/null 2>&1; then
+            echo "This tag ${{ github.event.inputs.tag_name }} already exists. Cancelling workflow."
+            exit 1
+          fi
+      - name: Get previous tag automatically if no manual tag is provided
+        if: ${{ github.event.inputs.tag_name == '' }}
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 0.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get next semantic version if no manual tag is provided
+        if: ${{ github.event.inputs.tag_name == '' }}
+        id: semvers
+        uses: WyriHaximus/github-action-next-semvers@v1
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+      - name: Set tag variable
+        id: set_tag
+        run: |
+          if [ "${{ github.event.inputs.tag_name }}" != "" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            TAG="${{ steps.semvers.outputs.v_patch }}"
+          fi
+          echo "tag_name=$TAG" >> $GITHUB_OUTPUT
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Create tag if it doesn't exist (only if not failed before)
+        run: |
+          if git rev-parse $TAG >/dev/null 2>&1; then
+            echo "This tag $TAG already exists. Cancelling workflow."
+            exit 1
+          else
+            git config --global user.email "admin@github.com"
+            git config --global user.name "Admin"
+            git tag -a $TAG HEAD -m "Release $TAG"
+            git push origin $TAG
+          fi
+
+  merge_release_to_main:
+    name: Merge release to main
+    runs-on: ubuntu-latest
+    environment: production
+    permissions: write-all
+    needs: tag_release_branch
+    steps:
+      - name: Checkout main and release branches
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Config git user
+        run: |
+          git config --global user.email "admin@github.com"
+          git config --global user.name "Admin"
+      - name: Bring release branch
+        run: |
+          git fetch origin ${{ github.event.inputs.release_branch }}:${{ github.event.inputs.release_branch }}
+      - name: Merge release branch to main
+        run: |
+          git checkout main
+          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "Merge ${{ github.event.inputs.release_branch }} into main"
+          git push origin main
+
+  merge_release_to_develop:
+    name: Merge release to develop
+    runs-on: ubuntu-latest
+    environment: production
+    permissions: write-all
+    needs: tag_release_branch
+    steps:
+      - name: Checkout develop and release branches
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Config git user
+        run: |
+          git config --global user.email "admin@github.com"
+          git config --global user.name "Admin"
+      - name: Bring release branch
+        run: |
+          git fetch origin ${{ github.event.inputs.release_branch }}:${{ github.event.inputs.release_branch }}
+      - name: Merge release branch to develop
+        run: |
+          git checkout develop
+          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "Merge ${{ github.event.inputs.release_branch }} into develop"
+          git push origin develop
+
+  deploy_vercel:
+    name: Deploy to Vercel(Production)
+    needs: [merge_release_to_main, merge_release_to_develop]
+    uses: ./.github/workflows/vercel-reusable-deploy.yml
+    with:
+      github_environment: production
+      vercel_environment: production
+      prod: true
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
