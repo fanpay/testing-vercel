@@ -27,7 +27,7 @@ jobs:
       node_version: ${{ github.event.inputs.node_version }}
     secrets: inherit
   manual-deploy-vercel:
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_vercel == 'yes'
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_deploy_vercel == 'yes'
     needs: call-ci-workflow
     uses: ./.github/workflows/vercel-reusable-deploy.yml
     with:

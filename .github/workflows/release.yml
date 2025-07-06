@@ -95,7 +95,7 @@ jobs:
   deploy_release_to_vercel_staging:
     needs: run_ci_on_release_branch # Needs to ensure the CI has passed
     if: github.event_name == 'workflow_call' # This job only runs when called from another workflow
-    name: Desplegar release a Vercel Staging
+    name: Deploy release to Vercel Staging
     uses: ./.github/workflows/vercel-reusable-deploy.yml # Calls our reusable Vercel deploy workflow
     with:
       github_environment: staging 
