@@ -77,7 +77,7 @@ jobs:
   # Merge release branch into staging after deployment to Vercel
   merge_branch_release_to_staging:
     # This job merges the release branch into the staging branch after deployment to Vercel
-    needs: deploy_release_to_vercel_staging
+    needs: run_ci_on_release_branch
     name: Merge release branch into staging
     permissions: write-all
     runs-on: ubuntu-latest
