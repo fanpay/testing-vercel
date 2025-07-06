@@ -29,6 +29,9 @@ jobs:
     outputs:
       tag_name: ${{ steps.set_tag.outputs.tag_name }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Get latest release branch if not provided
         if: ${{ github.event.inputs.release_branch == '' }}
         id: get_latest_release_branch
