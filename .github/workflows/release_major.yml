@@ -6,27 +6,28 @@ on:
 
 jobs:
   generate-version:
-    name: Generar versión MAJOR
+    name: Create MAJOR version
     runs-on: ubuntu-latest
     outputs:
       release_version: ${{ steps.setting_version.outputs.RELEASE_VERSION }}
       release_tag: ${{ steps.setting_version.outputs.RELEASE_TAG }}
 
     steps:
-      - name: Actualizar repositorio
+      - name: Update repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necesario para obtener todos los tags
+          fetch-depth: 0 # Necessary to get all tags
 
-      - name: Se obtiene tag anterior
+      - name: Get previous tag from repository
+        # This step retrieves the last tag from the repository to determine the next version
         id: previoustag
         uses: 'WyriHaximus/github-action-get-previous-tag@v1'
         with:
           fallback: 0.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Asegúrate de que este secreto esté disponible
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Make sure this secret is available
 
-      - name: 'Se obtiene la nueva versión de acuerdo al tag'
+      - name: Get new version based on previous tag
         id: semvers
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
@@ -45,13 +46,13 @@ jobs:
 
   invoke_workflow:
     needs: [ generate-version ]
-    permissions: write-all # Se necesitan permisos de escritura para que 'release.yml' pueda crear ramas y tags
-    uses: ./.github/workflows/release.yml # Ruta al workflow reusable de release
+    permissions: write-all # This step needs write permissions to create branches and tags
+    uses: ./.github/workflows/release.yml # Path to the reusable release workflow
     with:
       release_version: release/${{ needs.generate-version.outputs.release_version }}
       release_tag: ${{ needs.generate-version.outputs.release_tag }}
     secrets:
-      # Pasa aquí todos los secretos que 'release.yml' ha definido como 'required: true' en sus inputs
+      # Pass here all the secrets that 'release.yml' has defined as 'required: true' in its inputs
       NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
       NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
       CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}
@@ -62,6 +63,3 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      # Si Docker no se usa en el proyecto Next.js, puedes eliminar estos:
-      # docker_username: ${{ secrets.DOCKER_USERNAME }}
-      # docker_token: ${{ secrets.DOCKER_TOKEN }}
