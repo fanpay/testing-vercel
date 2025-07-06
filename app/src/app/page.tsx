@@ -14,7 +14,7 @@ export default function Home() {
       {/* Header */}
       <header className="w-full py-8 flex flex-col items-center bg-white/80 dark:bg-gray-900/80 shadow-sm mb-6">
         <h1 className="text-4xl font-extrabold tracking-tight text-blue-700 dark:text-blue-300 mb-2">
-          ¡Hola mundo! 🚀
+          Hey world!!!!! 🚀
         </h1>
         <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold uppercase tracking-wider shadow">
           environment: {environment}
@@ -34,7 +34,7 @@ export default function Home() {
           />
           <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-100 dark:border-blue-900">
             <h2 className="font-semibold mb-2 text-blue-700 dark:text-blue-200 text-sm">
-              Variables de entorno detectadas:
+              Detected Environment Variables:
             </h2>
             {envVars.length > 0 ? (
               <ul className="text-xs font-mono text-blue-900 dark:text-blue-100">
@@ -46,19 +46,19 @@ export default function Home() {
               </ul>
             ) : (
               <div className="text-xs text-blue-700 dark:text-blue-300 italic">
-                No se detectaron variables NEXT_PUBLIC_
+                Environment variables not detected NEXT_PUBLIC_
               </div>
             )}
           </div>
           <ol className="list-decimal list-inside text-gray-700 dark:text-gray-200 text-sm space-y-1">
             <li>
-              Edita el archivo{" "}
+              Edit file{" "}
               <code className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded font-mono font-semibold">
                 src/app/page.tsx
               </code>{" "}
-              para comenzar.
+              to start.
             </li>
-            <li>Guarda y observa los cambios al instante.</li>
+            <li>Save and check changes immediately</li>
           </ol>
           <div className="flex gap-3 justify-center mt-2">
             <a
@@ -67,7 +67,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Documentación
+              Documentation
             </a>
             <a
               className="rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm font-medium transition-colors shadow"
@@ -75,7 +75,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Aprende Next.js
+              Learn Next.js
             </a>
           </div>
         </div>
