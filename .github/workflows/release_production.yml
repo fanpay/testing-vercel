@@ -16,6 +16,7 @@ jobs:
     name: Mergear release a main
     runs-on: ubuntu-latest
     environment: production
+    permissions: write-all
     steps:
       - name: Checkout de main y release
         uses: actions/checkout@v4
@@ -40,6 +41,7 @@ jobs:
     name: Mergear release a develop
     runs-on: ubuntu-latest
     environment: production
+    permissions: write-all
     steps:
       - name: Checkout de develop y release
         uses: actions/checkout@v4
@@ -64,6 +66,7 @@ jobs:
     name: Taggear main
     runs-on: ubuntu-latest
     environment: production
+    permissions: write-all
     needs: [merge_release_to_main, merge_release_to_develop]
     outputs:
       tag_name: ${{ steps.get_tag.outputs.tag_name }}
