@@ -11,16 +11,16 @@ on:
         default: '22'
         type: choice
         options:
-          - '20'
           - '22'
+          - '20'
       manual_deploy_vercel:
-        description: 'Deploy to Vercel after manual CI? (yes/no)'
+        description: 'Manual deploy to Vercel after manual CI? (yes/no)'
         required: false
         default: 'no'
         type: choice
         options:
-          - 'yes'
           - 'no'
+          - 'yes'
 jobs:
   call-ci-workflow:
     uses: ./.github/workflows/reusable-ci.yml
