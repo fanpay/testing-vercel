@@ -7,7 +7,7 @@ export default function Home() {
   );
 
   // Detectar el ambiente desde una variable pública
-  const ambiente = process.env.NEXT_PUBLIC_ENVIRONMENT || "local";
+  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || "local";
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
@@ -17,7 +17,7 @@ export default function Home() {
           ¡Hola mundo! 🚀
         </h1>
         <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold uppercase tracking-wider shadow">
-          Ambiente: {ambiente}
+          environment: {environment}
         </span>
       </header>
 
@@ -96,7 +96,7 @@ export default function Home() {
             width={14}
             height={14}
           />
-          Ejemplos
+          Examples
         </a>
         <a
           className="flex items-center gap-1 hover:underline"
