@@ -33,6 +33,7 @@ jobs:
     with:
       github_environment: staging
       vercel_environment: preview
+      branch_name: staging
       prod: false
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

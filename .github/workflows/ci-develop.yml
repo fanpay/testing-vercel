@@ -36,6 +36,7 @@ jobs:
     with:
       github_environment: develop
       vercel_environment: develop
+      branch_name: develop
       prod: false
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
