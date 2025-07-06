@@ -54,7 +54,14 @@ jobs:
           if [ "${{ github.event.inputs.tag_name }}" != "" ]; then
             TAG="${{ github.event.inputs.tag_name }}"
           else
-            TAG="${{ steps.semvers.outputs.v_patch }}"
+            # Get version from branch name if it follows the release pattern (e.g., release/1.2.3)
+            BRANCH_NAME="${{ github.event.inputs.release_branch }}"
+            if [[ "$BRANCH_NAME" =~ release\/([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+              TAG="${BASH_REMATCH[1]}"
+            else
+              # Fallback: use the next patch version
+              TAG="${{ steps.semvers.outputs.v_patch }}"
+            fi
           fi
           echo "tag_name=$TAG" >> $GITHUB_OUTPUT
           echo "TAG=$TAG" >> $GITHUB_ENV
