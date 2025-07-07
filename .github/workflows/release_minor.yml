@@ -1,5 +1,6 @@
-# .github/workflows/Release MINOR.yml
-name: Release MINOR version
+# .github/workflows/release_minor.yml
+name: 02 - Release - Minor
+run-name: ${{ github.actor }} is creating a MINOR - Release branch 🚀
 
 on:
   workflow_dispatch:

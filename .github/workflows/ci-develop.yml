@@ -1,4 +1,4 @@
-name: CI - Develop
+name: 01 - CI - Develop
 on:
   pull_request:
     branches:

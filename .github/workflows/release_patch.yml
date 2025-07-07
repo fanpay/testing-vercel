@@ -1,5 +1,6 @@
-# File: .github/workflows/release_patch.yml
-name: Release PATCH version
+# .github/workflows/release_patch.yml
+name: 02 - Release - Patch
+run-name: ${{ github.actor }} is creating a PATCH - Release branch 🚀
 
 on:
   workflow_dispatch:

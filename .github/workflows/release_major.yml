@@ -1,5 +1,6 @@
-# .github/workflows/Release MAJOR.yml
-name: Release MAJOR version
+# .github/workflows/release_major.yml
+name: 02 - Release - Major
+run-name: ${{ github.actor }} is creating a MAJOR - Release branch 🚀
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: CI - QA
+name: 01 - CI - QA
 on:
   pull_request:
     branches:

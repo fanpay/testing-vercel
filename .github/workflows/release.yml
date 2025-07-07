@@ -1,5 +1,5 @@
 # .github/workflows/release.yml
-name: Create new version - release
+name: Reusable Release Steps - Create new version
 on:
   workflow_call:
     inputs:

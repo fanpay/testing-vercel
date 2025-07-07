@@ -1,4 +1,4 @@
-name: CI - Staging
+name: 01 - CI - Staging
 on:
   workflow_dispatch:
     inputs:

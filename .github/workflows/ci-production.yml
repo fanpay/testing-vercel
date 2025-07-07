@@ -1,4 +1,4 @@
-name: CI - Production
+name: 01 - CI - Production
 on:
   workflow_dispatch:
     inputs:
