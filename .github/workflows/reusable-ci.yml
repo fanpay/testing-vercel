@@ -57,11 +57,7 @@ jobs:
       - name: 📊 Run Lighthouse CI
         run: |
           npm run lighthouse || echo "No lighthouse script defined"
-      - name: 🔎 Print environment variable names (debug)
-        run: |
-          echo "Environment variable names:" && printenv | cut -d= -f1 | sort
-          echo "Secret variable names (by pattern):"
-          env | grep -E 'KONTENT|CONSCIA|LHCI|VERCEL' | cut -d= -f1 | sort
+
       - name: 🔎 Print environment variables and secrets (debug)
         run: |
           echo "\n--- Environment variables (all) ---"
@@ -72,3 +68,7 @@ jobs:
         run: |
           echo ${{secrets.VERCEL_ORG_ID}} | sed 's/./& /g'
           echo ${{secrets.CONSCIA_ENVIRONMENT_CODE}} | sed 's/./& /g'
+      - name: 🏷️ Print GitHub Environment (debug)
+        run: |
+          echo "GitHub Environment (input): ${{ inputs.github_environment }}"
+          echo "GitHub Environment (runtime): ${{ github.environment.name }}"
