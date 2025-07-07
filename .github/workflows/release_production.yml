@@ -1,5 +1,5 @@
 name: 03 - Release to Production (Manual)
-run-name: ${{ github.actor }} is releasing to Production 🚀
+run-name: Releasing to Production - ${{ github.event.inputs.release_branch || 'latest' }} - ${{ github.event.inputs.tag_name || 'auto-generated' }}
 on:
   workflow_dispatch:
     inputs:
