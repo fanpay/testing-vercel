@@ -1,5 +1,5 @@
 # .github/workflows/reusable-ci.yml
-name: Reusable CI Steps
+name: ▫️ Reusable CI Steps
 
 on:
   workflow_call:

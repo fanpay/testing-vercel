@@ -1,5 +1,5 @@
 # .github/workflows/vercel-reusable-deploy.yml
-name: Reusable Vercel Deploy (CLI)
+name: ▫️ Reusable Vercel Deploy (CLI)
 
 on:
   workflow_call:
