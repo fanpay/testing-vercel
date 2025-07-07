@@ -14,7 +14,7 @@ export default function Home() {
       {/* Header */}
       <header className="w-full py-8 flex flex-col items-center bg-white/80 dark:bg-gray-900/80 shadow-sm mb-6">
         <h1 className="text-4xl font-extrabold tracking-tight text-blue-700 dark:text-blue-300 mb-2">
-          Ciao - Buonasera mondo !!!!! 🚀🚀🧱🧱🇮🇹
+          Hola mundo :flag:
         </h1>
         <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold uppercase tracking-wider shadow">
           environment: {environment}
