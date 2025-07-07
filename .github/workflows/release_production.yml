@@ -166,7 +166,7 @@ jobs:
     name: Manual Deploy to Vercel(Production)
     if: github.event_name == 'workflow_dispatch' && inputs.manual_deploy_vercel == 'yes'
     needs: [merge_release_to_main, merge_release_to_develop]
-    uses: ./.github/workflows/vercel-reusable-deploy.yml
+    uses: ./.github/workflows/reusable-vercel-deploy.yml
     with:
       github_environment: production
       vercel_environment: production

@@ -29,7 +29,7 @@ jobs:
   manual-deploy-vercel:
     if: github.event_name == 'workflow_dispatch' && inputs.manual_deploy_vercel == 'yes'
     needs: call-ci-workflow
-    uses: ./.github/workflows/vercel-reusable-deploy.yml
+    uses: ./.github/workflows/reusable-vercel-deploy.yml
     with:
       github_environment: staging
       vercel_environment: preview

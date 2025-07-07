@@ -1,4 +1,4 @@
-# .github/workflows/vercel-reusable-deploy.yml
+# .github/workflows/reusable-vercel-deploy.yml
 name: ▫️ Reusable Vercel Deploy (CLI)
 
 on:
