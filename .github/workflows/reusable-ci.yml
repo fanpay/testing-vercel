@@ -14,6 +14,21 @@ on:
         required: false
         type: string
         default: '22'
+    secrets:
+      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID:
+        required: true
+      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME:
+        required: true
+      CONSCIA_API_URL:
+        required: true
+      CONSCIA_BEARER_TOKEN:
+        required: true
+      CONSCIA_CUSTOMER:
+        required: true
+      CONSCIA_ENVIRONMENT_CODE:
+        required: true
+      LHCI_GITHUB_APP_TOKEN:
+        required: true
 
 jobs:
   build-and-test:
@@ -57,18 +72,3 @@ jobs:
       - name: 📊 Run Lighthouse CI
         run: |
           npm run lighthouse || echo "No lighthouse script defined"
-
-      - name: 🔎 Print environment variables and secrets (debug)
-        run: |
-          echo "\n--- Environment variables (all) ---"
-          printenv | sort
-          echo "\n--- Repository secrets (by pattern) ---"
-          env | grep -E 'KONTENT|CONSCIA|LHCI|VERCEL' | sort
-      - name: checking repo sec
-        run: |
-          echo ${{secrets.VERCEL_ORG_ID}} | sed 's/./& /g'
-          echo ${{secrets.CONSCIA_ENVIRONMENT_CODE}} | sed 's/./& /g'
-      - name: 🏷️ Print GitHub Environment (debug)
-        run: |
-          echo "GitHub Environment (input): ${{ inputs.github_environment }}"
-          echo "GitHub Environment (runtime): ${{ github.environment.name }}"

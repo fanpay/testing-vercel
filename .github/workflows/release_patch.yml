@@ -58,3 +58,15 @@ jobs:
     with:
       release_version: release/${{ needs.generate-version.outputs.release_version }}
       node_version: ${{ github.event.inputs.node_version }}
+    secrets:
+      # Pass here all the secrets that 'release.yml' has defined as 'required: true' in its inputs
+      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
+      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
+      CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}
+      CONSCIA_BEARER_TOKEN: ${{ secrets.CONSCIA_BEARER_TOKEN }}
+      CONSCIA_CUSTOMER: ${{ secrets.CONSCIA_CUSTOMER }}
+      CONSCIA_ENVIRONMENT_CODE: ${{ secrets.CONSCIA_ENVIRONMENT_CODE }}
+      LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
