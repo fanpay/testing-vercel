@@ -61,4 +61,10 @@ jobs:
         run: |
           echo "Environment variable names:" && printenv | cut -d= -f1 | sort
           echo "Secret variable names (by pattern):"
-          env | grep -E 'KONTENT|CONSCIA|LHCI' | cut -d= -f1 | sort
+          env | grep -E 'KONTENT|CONSCIA|LHCI|VERCEL' | cut -d= -f1 | sort
+      - name: 🔎 Print environment variables and secrets (debug)
+        run: |
+          echo "\n--- Environment variables (all) ---"
+          printenv | sort
+          echo "\n--- Repository secrets (by pattern) ---"
+          env | grep -E 'KONTENT|CONSCIA|LHCI|VERCEL' | sort
