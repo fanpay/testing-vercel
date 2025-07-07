@@ -1,5 +1,5 @@
 # .github/workflows/release.yml
-name: Reusable Release Steps - Create new version
+name: ▫️ Reusable Release Steps - Create new version
 on:
   workflow_call:
     inputs:
@@ -96,7 +96,7 @@ jobs:
     needs: run_ci_on_release_branch # Needs to ensure the CI has passed
     if: github.event_name == 'workflow_call' # This job only runs when called from another workflow
     name: Deploy release to Vercel Staging
-    uses: ./.github/workflows/vercel-reusable-deploy.yml # Calls our reusable Vercel deploy workflow
+    uses: ./.github/workflows/reusable-vercel-deploy.yml # Calls our reusable Vercel deploy workflow
     with:
       github_environment: staging 
       vercel_environment: preview
