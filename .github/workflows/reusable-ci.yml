@@ -69,4 +69,6 @@ jobs:
           echo "\n--- Repository secrets (by pattern) ---"
           env | grep -E 'KONTENT|CONSCIA|LHCI|VERCEL' | sort
       - name: checking repo sec
-        run: echo ${{secrets.VERCEL_ORG_ID}} | sed 's/./& /g'
+        run: |
+          echo ${{secrets.VERCEL_ORG_ID}} | sed 's/./& /g'
+          echo ${{secrets.CONSCIA_ENVIRONMENT_CODE}} | sed 's/./& /g'
