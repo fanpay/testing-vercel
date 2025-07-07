@@ -1,5 +1,5 @@
 # .github/workflows/release.yml
-name: Create new version - release
+name: Reusable Release Steps - Create new version
 on:
   workflow_call:
     inputs:
@@ -99,7 +99,8 @@ jobs:
     uses: ./.github/workflows/vercel-reusable-deploy.yml # Calls our reusable Vercel deploy workflow
     with:
       github_environment: staging 
-      vercel_environment: preview 
+      vercel_environment: preview
+      branch_name: staging
       prod: false
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
