@@ -10,27 +10,6 @@ on:
         required: false
         type: string
         default: '22'
-    secrets:
-      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID:
-        required: true
-      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME:
-        required: true
-      CONSCIA_API_URL:
-        required: true
-      CONSCIA_BEARER_TOKEN:
-        required: true
-      CONSCIA_CUSTOMER:
-        required: true
-      CONSCIA_ENVIRONMENT_CODE:
-        required: true
-      LHCI_GITHUB_APP_TOKEN:
-        required: true
-      VERCEL_TOKEN:
-        required: true
-      VERCEL_ORG_ID:
-        required: true
-      VERCEL_PROJECT_ID:
-        required: true
 
 jobs:
   create_branch_release:
@@ -48,7 +27,7 @@ jobs:
           git checkout develop
           git pull
           git checkout -b ${{inputs.release_version}}
-          git push -f -u origin ${{inputs.release_version}}
+          git push -u origin ${{inputs.release_version}}
       - name: Merge develop -> release
         uses: tukasz/direct-merge-action@master
         with:
@@ -65,16 +44,6 @@ jobs:
       branch_name: ${{ inputs.release_version }}
       github_environment: staging 
       node_version: ${{ inputs.node_version }}
-    secrets:
-      # Passing the required secrets to the reusable CI workflow
-      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID: ${{ secrets.NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID }}
-      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME: ${{ secrets.NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME }}
-      CONSCIA_API_URL: ${{ secrets.CONSCIA_API_URL }}
-      CONSCIA_BEARER_TOKEN: ${{ secrets.CONSCIA_BEARER_TOKEN }}
-      CONSCIA_CUSTOMER: ${{ secrets.CONSCIA_CUSTOMER }}
-      CONSCIA_ENVIRONMENT_CODE: ${{ secrets.CONSCIA_ENVIRONMENT_CODE }}
-      LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-
   # Merge release branch into staging after deployment to Vercel
   merge_branch_release_to_staging:
     # This job merges the release branch into the staging branch after deployment to Vercel
@@ -102,8 +71,4 @@ jobs:
       vercel_environment: preview
       branch_name: staging
       prod: false
-    secrets:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 

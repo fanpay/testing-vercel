@@ -17,13 +17,6 @@ on:
       branch_name:
         required: true
         type: string
-    secrets:
-      VERCEL_TOKEN:
-        required: true
-      VERCEL_ORG_ID:
-        required: true
-      VERCEL_PROJECT_ID:
-        required: true
 
 jobs:
   deploy-vercel:

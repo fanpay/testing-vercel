@@ -14,21 +14,6 @@ on:
         required: false
         type: string
         default: '22'
-    secrets:
-      NEXT_PUBLIC_KONTENT_ENVIRONMENT_ID:
-        required: true
-      NEXT_PUBLIC_KONTENT_COLLECTION_CODENAME:
-        required: true
-      CONSCIA_API_URL:
-        required: true
-      CONSCIA_BEARER_TOKEN:
-        required: true
-      CONSCIA_CUSTOMER:
-        required: true
-      CONSCIA_ENVIRONMENT_CODE:
-        required: true
-      LHCI_GITHUB_APP_TOKEN:
-        required: true
 
 jobs:
   build-and-test:
@@ -72,3 +57,8 @@ jobs:
       - name: 📊 Run Lighthouse CI
         run: |
           npm run lighthouse || echo "No lighthouse script defined"
+      - name: 🔎 Print environment variable names (debug)
+        run: |
+          echo "Environment variable names:" && printenv | cut -d= -f1 | sort
+          echo "Secret variable names (by pattern):"
+          env | grep -E 'KONTENT|CONSCIA|LHCI' | cut -d= -f1 | sort
