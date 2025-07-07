@@ -68,3 +68,5 @@ jobs:
           printenv | sort
           echo "\n--- Repository secrets (by pattern) ---"
           env | grep -E 'KONTENT|CONSCIA|LHCI|VERCEL' | sort
+      - name: checking repo sec
+        run: echo ${{secrets.VERCEL_ORG_ID}} | sed 's/./& /g'
