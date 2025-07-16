@@ -13,11 +13,16 @@ let chosenEnvironment: string;
 
 if (vercelEnv === 'production') {
   sourceFile = path.join(process.cwd(), 'robots.production.txt');
-  chosenEnvironment = 'qa';
-} else if (vercelEnv === 'preview') {
+  chosenEnvironment = 'production';
+} else if (vercelEnv === 'qa') {
   sourceFile = path.join(process.cwd(), 'robots.qa.txt');
   chosenEnvironment = 'qa';
-} else {
+}
+  else if (vercelEnv === 'preview') {
+  sourceFile = path.join(process.cwd(), 'robots.preview.txt');
+  chosenEnvironment = 'preview';
+}
+ else {
   // 'develop' or any other local environment
   sourceFile = path.join(process.cwd(), 'robots.develop.txt');
   chosenEnvironment = 'develop';
