@@ -1,0 +1,36 @@
+# .github/workflows/manual-copy-robots.yml
+name: Manual Copy Robots
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente (production, qa, preview, develop)'
+        required: true
+        default: 'develop'
+
+jobs:
+  copy-robots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+        working-directory: app
+      - name: Set environment variable
+        run: echo "VERCEL_ENV=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+      - name: Run copy-robots script and append timestamp
+        run: |
+          node scripts/copy-robots.js
+          if [ -f public/robots.txt ]; then
+            echo "# Copied at $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> public/robots.txt
+            echo "Timestamp appended to robots.txt"
+          else
+            echo "robots.txt not found, nothing to timestamp."
+          fi
+        working-directory: app
