@@ -111,18 +111,22 @@ jobs:
         run: npx tsc --project scripts/tsconfig.json
         working-directory: app
 
-      - name: Run migrateContentItems script
-        env:
-          MIGRATION_ENVIRONMENT_ID_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_ID_DEV }}
-          MIGRATION_ENVIRONMENT_API_KEY_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_DEV }}
-          MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_DEV }}
-          MIGRATION_ENVIRONMENT_ID_QA: ${{ secrets.MIGRATION_ENVIRONMENT_ID_QA }}
-          MIGRATION_ENVIRONMENT_API_KEY_QA: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_QA }}
-          MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_QA: ${{ secrets.MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_QA }}
-          MIGRATION_ENVIRONMENT_ID_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_ID_PROD }}
-          MIGRATION_ENVIRONMENT_API_KEY_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_PROD }}
-          MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_PROD }}
+      - name: Print environment and command (dry run)
         run: |
+          echo "--- DRY RUN: MIGRATION ---"
+          if [ "${{ github.event.inputs.target_env }}" = "prod" ]; then
+            echo "🚨 Ejecutando en producción (production)!"
+          else
+            echo "Entorno destino: ${{ github.event.inputs.target_env }}"
+          fi
+          echo "Parámetros:"
+          echo "  source_env: ${{ github.event.inputs.source_env }}"
+          echo "  target_env: ${{ github.event.inputs.target_env }}"
+          echo "  language: ${{ github.event.inputs.language }}"
+          echo "  method: ${{ github.event.inputs.method }}"
+          echo "  values: ${{ github.event.inputs.values }}"
+          echo "  depth: ${{ github.event.inputs.depth }}"
+          echo "  limit: ${{ github.event.inputs.limit }}"
           CMD="npm run migrateContentItems ${{ github.event.inputs.source_env }} ${{ github.event.inputs.target_env }} ${{ github.event.inputs.language }} ${{ github.event.inputs.method }} ${{ github.event.inputs.values }}"
           if [ -n "${{ github.event.inputs.depth }}" ]; then
             CMD="$CMD depth ${{ github.event.inputs.depth }}"
@@ -130,4 +134,4 @@ jobs:
           if [ -n "${{ github.event.inputs.limit }}" ]; then
             CMD="$CMD limit ${{ github.event.inputs.limit }}"
           fi
-          eval $CMD
+          echo "Comando que se ejecutaría: $CMD"
