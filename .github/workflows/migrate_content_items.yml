@@ -1,0 +1,131 @@
+# 🚚 Migrate Content Items Between Environments
+#
+# This workflow allows migrating content items between Kontent.ai environments.
+#
+# **Required Inputs:**
+# - source_env: Source environment (dev, qa, prod)
+# - target_env: Target environment (dev, qa, prod)
+# - language: Language codename (ej: en-US)
+# - method: items | last | byTypes | filter
+# - values: (optional) Depends on the method:
+#     - items: codenames separated by space
+#     - last: number of items
+#     - byTypes: codenames of types separated by space
+#     - filter: filter query
+# - depth: (optional) Depth of linked items
+# - limit: (optional) Limit of items
+#
+# **Example usage:**
+# - Migrate 2 specific items:
+#   - method: items
+#   - values: item_codename1 item_codename2
+# - Migrate the last 5 items:
+#   - method: last
+#   - values: 5
+# - Migrate by types:
+#   - method: byTypes
+#   - values: type1 type2
+# - Migrate by filter:
+#   - method: filter
+#   - values: "elements.title = 'Test'"
+#
+# If you don't use depth or limit, they are automatically omitted.
+#
+name: 🚚 Migrate Content Items Between Environments
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_env:
+        description: 'Source environment (dev, qa, prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - 'dev'
+          - 'qa'
+          - 'prod'
+      target_env:
+        description: 'Target environment (dev, qa, prod)'
+        required: true
+        default: 'qa'
+        type: choice
+        options:
+          - 'dev'
+          - 'qa'
+          - 'prod'
+      language:
+        description: 'Language codename (i.e: en-US)'
+        required: true
+        default: 'en-US'
+      method:
+        description: 'Method: items, last, byTypes, filter'
+        required: true
+        default: 'items'
+        type: choice
+        options:
+          - 'items'
+          - 'last'
+          - 'byTypes'
+          - 'filter'
+      values:
+        description: 'Values according to method (e.g., item1 item2, or number, or codenames, or query)'
+        required: false
+        default: ''
+      depth:
+        description: 'Depth of linked items (optional)'
+        required: false
+        default: ''
+      limit:
+        description: 'Limit of items (optional)'
+        required: false
+        default: ''
+      node_version:
+        description: 'Node.js version to use'
+        required: false
+        default: '22'
+        type: choice
+        options:
+          - '22'
+          - '20'
+
+jobs:
+  migrate-content-items:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.target_env == 'prod' && 'production' || github.event.inputs.target_env }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ github.event.inputs.node_version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build scripts
+        run: npx tsc --project scripts/tsconfig.json
+
+      - name: Run migrateContentItems script
+        env:
+          MIGRATION_ENVIRONMENT_ID_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_ID_DEV }}
+          MIGRATION_ENVIRONMENT_API_KEY_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_DEV }}
+          MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_DEV }}
+          MIGRATION_ENVIRONMENT_ID_QA: ${{ secrets.MIGRATION_ENVIRONMENT_ID_QA }}
+          MIGRATION_ENVIRONMENT_API_KEY_QA: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_QA }}
+          MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_QA: ${{ secrets.MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_QA }}
+          MIGRATION_ENVIRONMENT_ID_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_ID_PROD }}
+          MIGRATION_ENVIRONMENT_API_KEY_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_PROD }}
+          MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_DELIVERY_PREVIEW_KEY_PROD }}
+        run: |
+          CMD="npm run migrateContentItems ${{ github.event.inputs.source_env }} ${{ github.event.inputs.target_env }} ${{ github.event.inputs.language }} ${{ github.event.inputs.method }} ${{ github.event.inputs.values }}"
+          if [ -n "${{ github.event.inputs.depth }}" ]; then
+            CMD="$CMD depth ${{ github.event.inputs.depth }}"
+          fi
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            CMD="$CMD limit ${{ github.event.inputs.limit }}"
+          fi
+          eval $CMD
