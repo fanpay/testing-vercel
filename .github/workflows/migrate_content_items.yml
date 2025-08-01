@@ -93,7 +93,14 @@ jobs:
   migrate-content-items:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.event.inputs.target_env == 'prod' && 'production' || github.event.inputs.target_env }}
+      # Si target_env es 'prod' => 'Production'
+      # Si target_env es 'dev'  => 'develop'
+      # Si no, usa el valor original (ej: 'qa')
+      name: ${{ 
+              github.event.inputs.target_env == 'prod' && 'Production' || 
+              github.event.inputs.target_env == 'dev' && 'develop' || 
+              github.event.inputs.target_env 
+            }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
