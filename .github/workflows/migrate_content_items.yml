@@ -104,10 +104,12 @@ jobs:
           node-version: ${{ github.event.inputs.node_version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+        working-directory: app
 
       - name: Build scripts
         run: npx tsc --project scripts/tsconfig.json
+        working-directory: app
 
       - name: Run migrateContentItems script
         env:
