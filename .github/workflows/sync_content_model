@@ -1,0 +1,139 @@
+# 🔄 Sync Content Model Between Environments
+#
+# This workflow allows you to synchronize content model entities (Content Types, Snippets, etc.) between Kontent.ai environments.
+#
+# **Inputs:**
+# - source_env: Source environment (dev, qa, prod)
+# - target_env: Target environment (dev, qa, prod)
+# - all: If set to "yes", syncs all entities and ignores filters. If "no", you can specify filters below.
+# - content_types: (optional) Comma-separated codenames of Content Types to sync (e.g. article,product,news)
+# - snippets: (optional) Comma-separated codenames of Snippets to sync
+#
+# **How to use:**
+# 1. Go to the Actions tab in GitHub and select "Sync Content Model Between Environments".
+# 2. Click "Run workflow" and fill in the required parameters:
+#    - Choose the source and target environments.
+#    - If you want to sync everything, set "all" to "yes" (filters will be ignored).
+#    - If you want to sync only specific entities, set "all" to "no" and fill in the codenames for content_types and/or snippets as needed.
+# 3. Click "Run workflow" to start the sync.
+#
+# **Examples:**
+# - Sync all entities from dev to qa:
+#   - source_env: dev
+#   - target_env: qa
+#   - all: yes
+# - Sync only specific content types:
+#   - source_env: dev
+#   - target_env: qa
+#   - all: no
+#   - content_types: article,product
+#
+# **Notes:**
+# - You must have the required secrets set for each environment in your repository settings.
+# - If you leave filters empty and "all" is "no", nothing will be synced.
+# - This workflow uses the same logic as the local script, so you can use it for both full and partial syncs.
+
+name: 🔄 Sync Content Model Between Environments
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_env:
+        description: 'Source environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - 'dev'
+          - 'qa'
+          - 'prod'
+      target_env:
+        description: 'Target environment'
+        required: true
+        default: 'qa'
+        type: choice
+        options:
+          - 'dev'
+          - 'qa'
+          - 'prod'
+      all:
+        description: 'Sync all entities (yes = ignore filters, no = use filters)'
+        required: false
+        default: 'no'
+        type: choice
+        options:
+          - 'no'
+          - 'yes'
+      content_types:
+        description: 'Content types to sync (comma separated codenames, optional)'
+        required: false
+        default: ''
+      snippets:
+        description: 'Snippets to sync (comma separated codenames, optional)'
+        required: false
+        default: ''
+      node_version:
+        description: 'Node.js version to use'
+        required: false
+        default: '22'
+        type: choice
+        options:
+          - '22'
+          - '20'
+
+jobs:
+  show-sync-parameters:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show sync parameters
+        run: |
+          echo "🔄 Syncing Content Model"
+          echo "Source environment: ${{ github.event.inputs.source_env }}"
+          echo "Target environment: ${{ github.event.inputs.target_env }}"
+          echo "Sync all entities: ${{ github.event.inputs.all }}"
+          if [ "${{ github.event.inputs.all }}" = "yes" ]; then
+            echo "Syncing ALL content types and snippets."
+          else
+            echo "Content types to sync: ${{ github.event.inputs.content_types }}"
+            echo "Snippets to sync: ${{ github.event.inputs.snippets }}"
+          fi
+
+  sync-content-model:
+    runs-on: ubuntu-latest
+    needs: show-sync-parameters
+    environment:
+      name: ${{ github.event.inputs.target_env == 'prod' && 'production' ||
+        github.event.inputs.target_env == 'dev' && 'develop' ||
+        github.event.inputs.target_env
+        }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ github.event.inputs.node_version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build scripts
+        run: npx tsc --project scripts/tsconfig.json
+
+      - name: Run syncContentModel script
+        env:
+          MIGRATION_ENVIRONMENT_ID_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_ID_DEV }}
+          MIGRATION_ENVIRONMENT_API_KEY_DEV: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_DEV }}
+          MIGRATION_ENVIRONMENT_ID_QA: ${{ secrets.MIGRATION_ENVIRONMENT_ID_QA }}
+          MIGRATION_ENVIRONMENT_API_KEY_QA: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_QA }}
+          MIGRATION_ENVIRONMENT_ID_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_ID_PROD }}
+          MIGRATION_ENVIRONMENT_API_KEY_PROD: ${{ secrets.MIGRATION_ENVIRONMENT_API_KEY_PROD }}
+        run: |
+          if [ "${{ github.event.inputs.all }}" = "yes" ]; then
+            npm run syncContentModel ${{ github.event.inputs.source_env }} ${{ github.event.inputs.target_env }} -- all
+          else
+            export MODEL_TO_MIGRATE_CONTENT_TYPES="${{ github.event.inputs.content_types }}"
+            export MODEL_TO_MIGRATE_CONTENT_TYPES_SNIPPETS="${{ github.event.inputs.snippets }}"
+            npm run syncContentModel ${{ github.event.inputs.source_env }} ${{ github.event.inputs.target_env }}
+          fi
