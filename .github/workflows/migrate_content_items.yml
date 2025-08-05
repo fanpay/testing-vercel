@@ -90,6 +90,21 @@ on:
           - '20'
 
 jobs:
+  migrate-content-items-info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show sync parameters
+        run: |
+          echo "🔄 Syncing Content Model"
+          echo "Source environment: ${{ github.event.inputs.source_env }}"
+          echo "Target environment: ${{ github.event.inputs.target_env }}"
+          echo "Sync all entities: ${{ github.event.inputs.all }}"
+          if [ "${{ github.event.inputs.all }}" = "yes" ]; then
+            echo "Sincronizando TODOS los content types y snippets."
+          else
+            echo "Content types a sincronizar: ${{ github.event.inputs.content_types }}"
+            echo "Snippets a sincronizar: ${{ github.event.inputs.snippets }}"
+          fi
   migrate-content-items:
     runs-on: ubuntu-latest
     environment:
